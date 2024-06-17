@@ -7,12 +7,12 @@ def cls(): os.system("cls")
 # 2-open file, read and write
 # read file
 def rea():
-	with open("C:\\Users\\thanh\\OneDrive\\Desktop\\SU24\\PFP\\homework\\GMS\\GMS.data", "r") as rd:
+	with open(os.path.dirname(__file__)+"\\GMS.data", "r") as rd:
 		ot = rd.readlines()
 		return ot # return file as list, split each line
 # write file	
 def wri(inp):
-	with open("C:\\Users\\thanh\\OneDrive\\Desktop\\SU24\\PFP\\homework\\GMS\\GMS.data", "w") as wr:
+	with open(os.path.dirname(__file__)+"\\GMS.data", "w") as wr:
 		wr.writelines(inp)
 # 2-end read write
 
