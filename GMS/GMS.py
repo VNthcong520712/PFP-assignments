@@ -1,5 +1,5 @@
 # 1-clear monitor
-import os
+import os, string
 def cls(): os.system("cls")
 # 1-end clear monitor
 
@@ -79,6 +79,7 @@ def merge(position = -1, optional = 0):
 		else:
 			read[pos] = up
 	wri(read) # write back to the file
+	print("Done!")
 # 5-end write
 
 
@@ -108,9 +109,10 @@ def typing(classid = 0, id = 0, name = 0, grade = 0):
 	# get input, check, and format
 	try: 
 		if classid: 
-			cl = input("Type class ID: ")
-			if not cl.isalnum(): raise("Invalid")
-			cl = cl.upper()
+			cl = input("Type class ID: ").strip()
+			for i in cl: 
+				if not i.isalnum() and i not in ["_", "*"]:
+					raise
 			out.append(cl)
 
 		if id:
@@ -149,7 +151,7 @@ def cal_student(grade = 0):
 		result = 0.1*(grade[0]+grade[1]+grade[2] + 4*grade[3] + 3*grade[4])
 		return result
 	else:
-		print("Calculate student's grade\n")
+		print("Calculate average grade of student\n")
 		id = typing(id=1)[0]
 		info = find(stid=id)
 		if info != -1:
@@ -168,11 +170,11 @@ def add_grade():
 	print("Add new grade:\n")
 	data = typing(1,1,1,1)
 	if find(data[0], data[1]) != -1: # so bao danh va lop da co
-		print("\nYour infor is existed !!")
+		print(f"\nYour information is existed with name: {table_data[find(data[0], data[1])[0]][2]} !!")
 	elif find(data[0]) == -1: # chua co lop 1 
 		if find(stid=data[1]) != -1: # da co so bao danh voi ten x
 			if find(stid=data[1], name=data[2]) == -1: # so bao danh va ten nhap vao khac voi file
-				print("The ID or name wrong !!")
+				print("\nThe ID or name wrong !!")
 			else: # so bao danh va ten nhap vao giong voi file
 				final = cal_student(data[3])
 				sta = 'Passed' if final >= 5 and data[3][4] >= 4 and data[3][2] > 0 and data[3][1] > 0 and data[3][0] > 0 else 'Failed'
@@ -206,10 +208,17 @@ def update_grade():
 	else:
 		final = cal_student(grade)
 		sta = 'Passed' if final >= 5 and grade[4] >= 4 and grade[2] > 0 and grade[1] > 0 and grade[0] > 0 else 'Failed'
-		grade.append(final)
-		table_data[ind[0]][3] = grade
-		table_data[ind[0]][4] = sta
-		merge(ind[0])
+		ver = input(f'Do you want to change the grade of {table_data[find(classid, id)[0]][2]} (Y/N):')
+		if ver.lower() == 'y':
+			grade.append(final)
+			table_data[ind[0]][3] = grade
+			table_data[ind[0]][4] = sta
+			merge(ind[0])
+		elif ver.lower() == 'n':
+			return
+		else:
+			print('\nInvalid !!')
+			raise
 # 10-end update
 
 
@@ -221,14 +230,21 @@ def delete_grade():
 	if ind == -1:
 		print("\nThis data is not existed !!")
 	else:
-		table_data.pop(ind[0])
-		merge(ind[0], 1)
+		ver = input(f'Do you want to delete the grade of {table_data[find(classid, id)[0]][2]} (Y/N):')
+		if ver.lower() == 'y':
+			table_data.pop(ind[0])
+			merge(ind[0], 1)
+		elif ver.lower() == 'n':
+			return
+		else:
+			print('\nInvalid !!')
+			raise
 # 11-end delete
 
 
 # 12-cal class greade
 def cal_class():
-	print("Calculate class class grade\n")
+	print("Calculate the avegrade grade of the class\n")
 	classid= typing(1)[0]
 	mems = find(classid)
 	if mems != -1:
@@ -248,8 +264,8 @@ def find_stu():
 	id = typing(id=1)[0]
 	cla = find(stid=id)
 	if cla != -1:
-		print("--------------------------------------------------------------------------------\n| class name | Workshop | Pregress test | Practical exam | Final exam | Status |")
-		form = "| {} | {}     | {}          | {}           | {}       | {} |"
+		print("-"*84+"\n|   class name   | Workshop | Progress test | Practical exam | Final exam | Status |")
+		form = "| {:<14} | {} | {} | {} | {} | {} |"
 		for x in cla:
 			pri = []
 			pri.append(table_data[x][0] + ' '*(10 - len(table_data[x][0])))
@@ -257,11 +273,10 @@ def find_stu():
 				if gr != 2:
 					score = table_data[x][3][gr]
 					score = str(int(score) if int(score) - score == 0 else score)
-					score += (' '*(4-len(score)))
 					pri.append(score)
 			pri.append(table_data[x][4])
-			print(form.format(pri[0], pri[1], pri[2], pri[3], pri[4], pri[5]))
-		print("--------------------------------------------------------------------------------")
+			print(form.format(pri[0], pri[1].center(8), pri[2].center(13), pri[3].center(14), pri[4].center(10), pri[5]))
+		print("-"*84)
 	else:
 		print("Your typing is invalid !!")
 # 13-end find
@@ -273,21 +288,20 @@ def find_cla():
 	clsid = typing(1)[0]
 	stus = find(clsid)
 	if stus != -1:
-		print("------------------------------------------------------------------------------------------------------------\n| Student ID |        Student name       | Workshop | Progress test | Practical exam | Final exam | Status |")
-		form = "| {} | {} | {}     | {}          | {}           | {}       | {} |"
+		print("-"*113+f"\n| Student ID | {'Student name'.center(30)} | Workshop | Progress test | Practical exam | Final exam | Status |")
+		form = "| {} | {} | {} | {} | {} | {} | {} |"
 		for x in stus:
 			pri = []
-			pri.append(table_data[x][1] + ' '*(10 - len(table_data[x][1])))
-			pri.append(table_data[x][2] + ' '*(25 - len(table_data[x][2])))
+			pri.append(table_data[x][1])
+			pri.append(table_data[x][2])
 			for gr in range(len(table_data[x][3])-1):
 				if gr != 2:
 					score = table_data[x][3][gr]
 					score = str(int(score) if int(score) - score == 0 else score)
-					score += (' '*(4-len(score)))
 					pri.append(score)
 			pri.append(table_data[x][4])
-			print(form.format(pri[0], pri[1], pri[2], pri[3], pri[4], pri[5], pri[6]))
-		print("------------------------------------------------------------------------------------------------------------")
+			print(form.format(pri[0].ljust(10), pri[1].ljust(30), pri[2].center(8), pri[3].center(13), pri[4].center(14), pri[5].center(10), pri[6]))
+		print("-"*113)
 	else:
 		print("Your typing is invalid !!")
 # 14-end find
